@@ -32,10 +32,10 @@ Costruire un AI Agent capace di rispondere a domande come _"Dov'è la fermata de
 └─────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────┐
-│  WORKFLOW 2 – AI Agent Telegram (sempre attivo)          │
-│                                                          │
-│  Telegram Trigger                                        │
-│       ↓                                                  │
+│  WORKFLOW 2 – AI Agent Telegram (sempre attivo)         │
+│                                                         │
+│  Telegram Trigger                                       │
+│       ↓                                                 │
 │  AI Agent ──────────────────────────────────────────┐   │
 │  │  Chat Model: GPT-4o-mini (temp 0.3)              │   │
 │  │  Memory: Simple Memory (session = chat.id)       │   │
