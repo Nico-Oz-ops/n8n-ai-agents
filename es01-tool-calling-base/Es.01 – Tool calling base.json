@@ -1,0 +1,143 @@
+{
+  "name": "Es.01 – Tool calling base",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "388c4e02-6638-40c5-804e-8638859d36f9",
+      "name": "When chat message received",
+      "webhookId": "3c4dee7e-778d-489f-98d7-2c67822471e9"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Hai un tool chiamato \"calculator\". \nQuando devi fare un calcolo, chiama il tool passando UNA SOLA STRINGA.\nEsempio corretto: calculator(\"sqrt(25)\")\nEsempio sbagliato: calculator({\"name\": \"sqrt\", \"parameters\": {\"x\": \"25\"}})\nMai inventare funzioni che non esistono.",
+          "maxIterations": 30
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "7b5f5ae4-f555-4dbd-a040-3ffec549868e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        560,
+        0
+      ],
+      "id": "d2488b7b-60f6-41fd-8293-272461075377",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "description": "Calcolatrice. Accetta una singola espressione matematica come stringa.\nEsempi validi:\n- \"2+2\"\n- \"sqrt(25)\"\n- \"10*5\"\nNon usare oggetti con nome e parametri separati.\nInput deve essere una stringa, esempio: \"sqrt(25)\"",
+        "jsCode": "const input = $input.first().json;\nconst expr = input.operation || input.input || input;\nconst result = eval(expr);\nreturn result.toString();"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        448,
+        240
+      ],
+      "id": "2e8b6992-1c8e-4b79-b176-c871406cada5",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        128,
+        240
+      ],
+      "id": "1116bbb0-c793-4fbb-8f41-c0e51721cb8f",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "z4r3Ydp7ELQrM5tS",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c57f28d7-e52f-4efa-b930-38d4f5c4c579",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4e374609afe687e3e32ee92cbc3a42394013d2e233db99b1f9bb8c3058d8e773"
+  },
+  "id": "fA2BPVTNfCG9lOSU",
+  "tags": []
+}
