@@ -1,0 +1,169 @@
+{
+  "name": "Es.04 – Tool API (meteo)",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6fb1686d-a2a2-4954-bb41-d104af729009",
+      "name": "When chat message received",
+      "webhookId": "99eb4778-1122-4337-916d-dc6faa367948"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Hai un tool chiamato get_weather. Quando l'utente chiede il meteo di una città, chiama il tool\npassando la città come parametro.\n\nEsempio: get_weather(city=\"Roma\")\n\nNon inventare mi temperature"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "aff1c3c6-bd9b-4a81-a1c6-95763796ec8f",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {
+          "maxTokensToSample": 1024,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        144,
+        240
+      ],
+      "id": "6501938c-634d-466b-83ad-1ff2c48d4f20",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "z4r3Ydp7ELQrM5tS",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        560,
+        0
+      ],
+      "id": "ced42139-18f0-48a5-981c-4df0e26c0c9c",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Ottieni il meteo per una città.\n\nNON passare il nome della città come latitudine o longitudine.\nDevi CONVERTIRE il nome della città in coordinate numeriche.\n\nEsempio:\n- Roma → latitude: 41.90, longitude: 12.49\n- Milano → latitude: 45.46, longitude: 9.19\n- Napoli → latitude: 40.85, longitude: 14.27\n\nSe non conosci le coordinate di una città, usa quelle di Roma come default (41.90, 12.49).\n\nParametri:\n- latitude: numero decimale (es. 41.90)\n- longitude: numero decimale (es. 12.49)\n- current_weather: sempre \"true\"\n",
+        "url": "https://api.open-meteo.com/v1/forecast",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "latitude",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', `Latitudine della città. Inferiscila dal nome`, 'string') }}"
+            },
+            {
+              "name": "longitude",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', `Longitudine della città. Inferiscila dal nome.`, 'string') }}"
+            },
+            {
+              "name": "current_weather",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters2_Value', `Metti sempre true per meteo attuale.`, 'string') }}"
+            },
+            {
+              "name": "time_zone",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters3_Value', `Fuso orario automatico.`, 'string') }}"
+            },
+            {
+              "name": "temperature_unit",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters4_Value', `Usa celsius.`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        432,
+        224
+      ],
+      "id": "3ddb13da-8e14-4707-9561-0f4b2e0c9ac4",
+      "name": "get_weather"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_weather": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "189941a6-6298-412b-9d5e-9e240c5ee2a5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4e374609afe687e3e32ee92cbc3a42394013d2e233db99b1f9bb8c3058d8e773"
+  },
+  "id": "9AoRQ39oWT0IXCTo",
+  "tags": []
+}

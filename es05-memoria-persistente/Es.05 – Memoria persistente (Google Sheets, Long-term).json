@@ -1,0 +1,255 @@
+{
+  "name": "Es.05 – Memoria persistente (Google Sheets, Long-term)",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cf69dd79-0d31-455c-bd3d-e46c983285ac",
+      "name": "When chat message received",
+      "webhookId": "3af689b5-3797-4050-9955-84c8d732597c"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Sei un assistente con memoria persistente.\nHai due tool:\n- save_note: usalo per salvare. Formato: \"titolo: contenuto\". Dopo aver salvato, FERMATI e conferma all'utente.\n- get_notes: usalo per recuperare note. Dopo aver ricevuto il risultato, FERMATI e mostralo all'utente.\n\nIMPORTANTE: chiama ogni tool UNA SOLA VOLTA per richiesta. Non ripetere la chiamata se hai gia ottenuto un risultato. Quando hai salvato devi CONFERMARE AL CLIENTE QUELLO CHE HAI SALVATO, non devi dire FERMATO, tu ti devi fermare, non restituire il messaggio \"FERMATO\"",
+          "maxIterations": "={{ 10 }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "ffe39c4f-83c8-4e80-b8df-484a6c659669",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        560,
+        0
+      ],
+      "id": "1080f6ca-be9e-4ff1-92dc-579947a73cf3",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "maxTokensToSample": 1024,
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        96,
+        256
+      ],
+      "id": "0b495e33-4af3-49d1-991d-c88bc15618fc",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "z4r3Ydp7ELQrM5tS",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Salva una nota. Usare quando l'utente vuole salvare, annotare o ricordare qualcosa per dopo.",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1R8GQ14e6rn19Z2H6ud61Azw4PKsB0H6j2o3LGAjYg-o",
+          "mode": "list",
+          "cachedResultName": "notes_n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R8GQ14e6rn19Z2H6ud61Azw4PKsB0H6j2o3LGAjYg-o/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R8GQ14e6rn19Z2H6ud61Azw4PKsB0H6j2o3LGAjYg-o/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Title": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}",
+            "Content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Content', ``, 'string') }}",
+            "savedAt": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "Title"
+          ],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "savedAt",
+              "displayName": "savedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        288,
+        240
+      ],
+      "id": "7daf0fc9-f646-4ed5-bf25-2181205aad41",
+      "name": "save_note",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JF6aAmfwyPMlt8ht",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Recupera le note salvate dall'utente. Usare quando l'utente chiede cosa ha salvato, cosa ha in agenda, o vuole ricordare qualcosa.",
+        "documentId": {
+          "__rl": true,
+          "value": "1R8GQ14e6rn19Z2H6ud61Azw4PKsB0H6j2o3LGAjYg-o",
+          "mode": "list",
+          "cachedResultName": "notes_n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R8GQ14e6rn19Z2H6ud61Azw4PKsB0H6j2o3LGAjYg-o/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R8GQ14e6rn19Z2H6ud61Azw4PKsB0H6j2o3LGAjYg-o/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        464,
+        240
+      ],
+      "id": "5195b48e-bc70-4cc3-bb94-86484ce19b56",
+      "name": "get_notes",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JF6aAmfwyPMlt8ht",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save_note": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_notes": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "27d6fd34-3775-44c9-8170-6e0edb539533",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4e374609afe687e3e32ee92cbc3a42394013d2e233db99b1f9bb8c3058d8e773"
+  },
+  "id": "bMtE2L0grcrQsmma",
+  "tags": []
+}

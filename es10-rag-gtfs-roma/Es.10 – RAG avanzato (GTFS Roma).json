@@ -1,0 +1,490 @@
+{
+  "name": "Es.10 – RAG avanzato (GTFS Roma)",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f3bb6c0c-5db5-4b4c-9b8f-840ae0fdbf74",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/node/.n8n-files/gtfs/stops.txt",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "060ac78d-16f6-43d1-b76e-e2233a6702ac",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Legge il testo estratto dal nodo \"Extract from File\"\nconst text = $input.first().json.data;\n// → il file è già una stringa leggibile, non serve conversione binaria\n\n// 2. Divide il testo in righe\nconst lines = text.trim().split('\\n');\n// → crea un array: lines[0], lines[1], lines[2]...\n\n// 3. Intestazioni (lines[0]) - non ci servono ma documentano la struttura\nconst headers = lines[0].split(',');\n// → [\"stop_id\", \"stop_code\", \"stop_name\", \"stop_desc\", \"stop_lat\", \"stop_lon\", ...]\n\n// 4. Parte da i=1 per leggere le fermate\nconst items = [];\nfor (let i = 1; i < lines.length; i++) {\n  const values = lines[i].split(',');\n  if (values.length < 5) continue;\n  // → salta righe malformate\n\n  // 5. Per ogni riga prende i 4 valori di interesse\n  items.push({\n    json: {\n      stop_id: values[0].trim(),\n      stop_name: values[2].trim().replace(/\"/g, '').replace(/\\\\/g, ''), // rimuove virgolette e backslash\n      stop_lat: parseFloat(values[4]), // values[3] è stop_desc, lo saltiamo\n      stop_lon: parseFloat(values[5]),\n    }\n  });\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "e19062bb-f5c3-41f8-a48d-db52271cd5b9",
+      "name": "Code (Parse CSV)"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {
+          "encoding": "utf8"
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "578a79f7-27c8-4099-924f-45cbd58a9494",
+      "name": "Extract from File",
+      "notesInFlow": false,
+      "notes": "Questo nodo serve a convertire il binario in testo JSON leggibile, poi nel nodo Code (Parse CSV) lo legge da $input.first().json.text"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        832,
+        0
+      ],
+      "id": "625e7103-7f71-48ca-b836-d2a4bf228fe1",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://nrtswufdvnvgptlkqvkq.supabase.co/rest/v1/gtfs_fermate",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "stop_id",
+              "value": "=\"{{ $('Loop Over Items').item.json.stop_id }}\""
+            },
+            {
+              "name": "stop_name",
+              "value": "=\"{{ $('Loop Over Items').item.json.stop_name }}\""
+            },
+            {
+              "name": "lat",
+              "value": "={{ $('Loop Over Items').item.json.stop_lat }}"
+            },
+            {
+              "name": "lon",
+              "value": "={{ $('Loop Over Items').item.json.stop_lon }}"
+            },
+            {
+              "name": "embedding",
+              "value": "={{ $('HTTP Request (OpenAI Embeddings)').item.json.data[0].embedding }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1216,
+        128
+      ],
+      "id": "7883367e-f397-4d33-8345-b9c380669928",
+      "name": "Supabase",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ecSpbUFVOkVvlZJo",
+          "name": "Header Auth account"
+        },
+        "supabaseApi": {
+          "id": "bx9tmTGM913rd7jx",
+          "name": "Supabase n8n_RAG"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"text-embedding-3-small\",\n  \"input\": \"={{ $json.stop_name }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        992,
+        128
+      ],
+      "id": "12513d83-637e-4215-9e36-a94455b5594c",
+      "name": "HTTP Request (OpenAI Embeddings)",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ecSpbUFVOkVvlZJo",
+          "name": "Header Auth account"
+        },
+        "openAiApi": {
+          "id": "ffNo0L3Up3uVkTQV",
+          "name": "OpenAI account"
+        }
+      },
+      "notes": "L'uso di POST in questo caso significa: \"manda questo testo al server OpenAI e restituiscimi il vettore\". Questa è una opzione di creazione del embedding perché non posso usare OpenAI Embeddings se non lo passo come tool di un AI Agent."
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        320
+      ],
+      "id": "3d90c8d3-d3e0-4774-9125-525f59f4f1e9",
+      "name": "Telegram Trigger",
+      "webhookId": "4644c36b-9f44-47f6-aefe-a659ebad1572",
+      "credentials": {
+        "telegramApi": {
+          "id": "QqQqPO6fkKWM4ApX",
+          "name": "Telegram_Assistente_Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "options": {
+          "systemMessage": "Sei un assistente esperto di trasporto pubblico di Roma. \nAiuti gli utenti a trovare fermate dell'autobus e della metro \nusando il database GTFS di Roma.\n\nREGOLE DI COMPORTAMENTO:\n- Se la domanda contiene informazioni sufficienti per rispondere, \n  rispondi SUBITO senza fare domande.\n- Fai domande SOLO se mancano informazioni indispensabili \n  (es. l'utente dice solo \"autobus\" senza nessun altro dettaglio).\n- Per ogni fermata trovata, mostra sempre il link Google Maps \n  nel formato: https://www.google.com/maps?q=LAT,LON\n- Rispondi in italiano, in modo diretto e conciso.\n- Se non hai i dati per rispondere completamente (es. linee o orari), \n  dillo subito chiaramente e suggerisci Google Maps o Moovit. \n  Non fare domande per rimandare una risposta che non puoi dare.\n- Non scrivere mai ragionamenti o note interne nel messaggio finale.",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        192,
+        320
+      ],
+      "id": "c1dbe786-5654-4905-ba0e-f9ada008a2f4",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        544,
+        320
+      ],
+      "id": "113ae531-8a05-4037-966e-ce433e60c05e",
+      "name": "Send a text message",
+      "webhookId": "d7d5621f-df42-462e-bdd2-04e9ffb992d7",
+      "credentials": {
+        "telegramApi": {
+          "id": "QqQqPO6fkKWM4ApX",
+          "name": "Telegram_Assistente_Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        560
+      ],
+      "id": "6efc1833-ec4f-482e-b098-a5040fb81ed6",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ffNo0L3Up3uVkTQV",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Cerca fermate del trasporto pubblico di Roma per nome. Usa questo tool quando l'utente chiede di trovare una fermata, un capolinea o una stazione.",
+        "url": "https://nrtswufdvnvgptlkqvkq.supabase.co/rest/v1/gtfs_fermate",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "stop_id,stop_name,lat,lon"
+            },
+            {
+              "name": "stop_name",
+              "value": "=ilike.*{{ $fromAI('fermata') }}*"
+            },
+            {
+              "name": "limit",
+              "value": "5"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        400,
+        560
+      ],
+      "id": "9ee0ee9a-af49-4b8d-8972-3da162ab3b3b",
+      "name": "HTTP Request",
+      "credentials": {
+        "supabaseApi": {
+          "id": "bx9tmTGM913rd7jx",
+          "name": "Supabase n8n_RAG"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        544
+      ],
+      "id": "396ad7a8-46c9-4625-a1aa-16615d152984",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "content": "**WORKFLOW 1 — INGESTION GTFS ROMA**\n\n**Obiettivo:** Popolare il database Supabase con le 8377 \nfermate GTFS di Roma, inclusi gli embeddings vettoriali.\n\n**Flusso:**\n1. Legge stops.txt dal disco (volume Docker montato)\n2. Estrae e parsa il CSV → 8377 fermate\n3. Per ogni fermata (Loop batch=1):\n   - Genera embedding con OpenAI text-embedding-3-small\n   - Salva in Supabase (tabella: gtfs_fermate)\n\n**Da eseguire UNA SOLA VOLTA.**\nSupabase rifiuta duplicati automaticamente.\nTabella: gtfs_fermate | Vettori: 1536 dim",
+        "height": 304,
+        "width": 432,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        -32
+      ],
+      "id": "14b37faf-72b2-4b63-8750-3cce321811d0",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "**WORKFLOW 2 — AI AGENT TELEGRAM**\n\n**Obiettivo:** Rispondere su Telegram alle domande \nsulle fermate del trasporto pubblico di Roma.\n\n**Flusso:**\n1. Telegram Trigger riceve il messaggio utente\n2. AI Agent (GPT-5-mini, temp=0.3) elabora la richiesta\n3. Tool HTTP Request cerca fermate su Supabase\n   (ricerca testuale ilike sul campo stop_name)\n4. L'Agent risponde con fermate + link Google Maps\n5. Send Telegram Message invia la risposta\n\n**Memoria:** Simple Memory (sessionId = chat.id, window=5)\nTool: search_fermate via Supabase REST API\n\nRichiede ngrok attivo per il webhook Telegram",
+        "height": 320,
+        "width": 432,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        352
+      ],
+      "id": "20b3393b-beb2-4c95-b314-a98dfa9cf0a0",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code (Parse CSV)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code (Parse CSV)": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request (OpenAI Embeddings)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request (OpenAI Embeddings)": {
+      "main": [
+        [
+          {
+            "node": "Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ac6749c8-1c33-44f4-a022-351daff86a46",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4e374609afe687e3e32ee92cbc3a42394013d2e233db99b1f9bb8c3058d8e773"
+  },
+  "id": "Nd1A0XE6XWQYFNsB",
+  "tags": []
+}

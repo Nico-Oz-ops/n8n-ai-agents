@@ -1,0 +1,340 @@
+{
+  "name": "Es.08 – Multi-tool coordination",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "**Obiettivo:** costruire un agent che usa più tool in sequenza per rispondere a una richiesta, decidendo autonomamente quale tool chiamare e in che ordine.\n\n**Scenario**\nUn agent assistente personale che può:\n\n1. Cercare il meteo – tool HTTP Request verso open-meteo (già visto in Es.04)\n2. Salvare note – tool Google Sheets (già visto in Es.05)\n3. Leggere note – tool Google Sheets (già visto in Es.05)\n\nLa novità di Es.08 non è il singolo tool, ma il fatto che l'agent coordina più tool nella stessa risposta quando serve.",
+        "height": 336,
+        "width": 336,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "6ae469aa-9069-4e05-a473-eaa477d5f9ab",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "options": {
+          "systemMessage": "Sei un assistente meteo personale che parla italiano.\n\nQuando l'utente chiede il meteo di una città:\n1. Usa il tool get_weather con le coordinate numeriche della città\n2. Rispondi con temperatura e condizioni\n\nQuando l'utente chiede di salvare una nota meteo:\n1. Prima usa get_weather per ottenere i dati\n2. Poi usa save_nota_meteo con questi valori esatti:\n   - città: nome della città\n   - temperatura: valore numerico in gradi\n   - condizioni: descrizione del tempo\n   - savedAt: data e ora attuale\n3. Conferma il salvataggio all'utente\n\nQuando l'utente chiede le note salvate:\n1. Usa get_note_meteo\n2. Elenca le note trovate\n\nUsa sempre coordinate numeriche per latitude e longitude.\nEsempio:\n- Roma: 41.9028, 12.4964\n- Milano: 45.4642, 9.1900\n- Napoli: 40.8518, 14.2681\n- Madrid: 40.4168, 3.7038\n- Barcellona: 41.3879, 2.1699",
+          "maxIterations": 5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        656,
+        16
+      ],
+      "id": "eb7d24d2-9c0a-42ff-bde5-24ca89fae8a4",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        528,
+        256
+      ],
+      "id": "54a914eb-e7c6-4a06-83c9-7f80dcb4930f",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "z4r3Ydp7ELQrM5tS",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Recupera il meteo attuale di una città. Richiede latitude (numero decimale, es: 41.9028) e longitude (numero decimale, es: 12.4964). Non modificare l'URL.",
+        "url": "https://api.open-meteo.com/v1/forecast",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "latitude",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', ``, 'string') }}"
+            },
+            {
+              "name": "longitude",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', ``, 'string') }}"
+            },
+            {
+              "name": "current",
+              "value": "temperature_2m,weathercode"
+            },
+            {
+              "name": "temperature_unit",
+              "value": "celsius"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        720,
+        272
+      ],
+      "id": "fa50517e-cb03-4e8d-b778-2884de8e7667",
+      "name": "get_weather"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "14_qSsxYO5IvG0qZlERr7gQn2NzzWjGGfh_RHZs2RCrA",
+          "mode": "list",
+          "cachedResultName": "n8n_meteo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14_qSsxYO5IvG0qZlERr7gQn2NzzWjGGfh_RHZs2RCrA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14_qSsxYO5IvG0qZlERr7gQn2NzzWjGGfh_RHZs2RCrA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "città": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('citt_', ``, 'string') }}",
+            "temperatura": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('temperatura', ``, 'string') }}",
+            "condizioni": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('condizioni', ``, 'string') }}",
+            "savedAt": "={{ $now }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "città",
+              "displayName": "città",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "temperatura",
+              "displayName": "temperatura",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "condizioni",
+              "displayName": "condizioni",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "savedAt",
+              "displayName": "savedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        896,
+        240
+      ],
+      "id": "74d2672c-e62e-4f56-ab92-66bc090deace",
+      "name": "save_nota_meteo",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JF6aAmfwyPMlt8ht",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "14_qSsxYO5IvG0qZlERr7gQn2NzzWjGGfh_RHZs2RCrA",
+          "mode": "list",
+          "cachedResultName": "n8n_meteo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14_qSsxYO5IvG0qZlERr7gQn2NzzWjGGfh_RHZs2RCrA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14_qSsxYO5IvG0qZlERr7gQn2NzzWjGGfh_RHZs2RCrA/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1072,
+        240
+      ],
+      "id": "9ec9bced-232d-400d-9ea5-d0cafd00eb7e",
+      "name": "get_note_meteo",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "FKlKX79UVHK92yDw",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $('AI Agent').item.json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1008,
+        16
+      ],
+      "id": "2b0f45f3-40a3-4a1d-8918-0210dae368ac",
+      "name": "Send a text message",
+      "webhookId": "1d08e9a6-5024-4c74-b2f8-810617944217",
+      "credentials": {
+        "telegramApi": {
+          "id": "PcHZaHftqqwFtV7n",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        16
+      ],
+      "id": "59e7cf24-0c57-4c11-a567-80ed7e01d54d",
+      "name": "Telegram Trigger",
+      "webhookId": "b37e280d-aeef-4835-a22d-d7b9f9f7fd03",
+      "credentials": {
+        "telegramApi": {
+          "id": "QqQqPO6fkKWM4ApX",
+          "name": "Telegram_Assistente_Bot"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_weather": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save_nota_meteo": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_note_meteo": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "0ffb7049-3ca4-4a4b-b7f6-e69d0670d592",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4e374609afe687e3e32ee92cbc3a42394013d2e233db99b1f9bb8c3058d8e773"
+  },
+  "id": "2Dpa6TaChGuRI1Xj",
+  "tags": []
+}

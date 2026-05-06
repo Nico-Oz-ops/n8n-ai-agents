@@ -1,0 +1,165 @@
+{
+  "name": "Es.09 – RAG Semplice - Variante B (Retrieval via HTTP Request)",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -80,
+        -160
+      ],
+      "id": "a4ae0289-8768-466e-984a-f5c5fdcc66a7",
+      "name": "When chat message received",
+      "webhookId": "e04cae8b-985a-474f-a891-539ef672c2cf"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Sei un assistente HR aziendale. Rispondi SOLO in italiano.\n\nQuando ricevi una domanda:\n1. Usa il tool search_knowledge per recuperare i documenti dalla knowledge base\n2. Analizza i documenti restituiti\n3. Seleziona SOLO quelli pertinenti alla domanda dell'utente\n4. Basa la risposta esclusivamente sui documenti pertinenti\n5. Cita sempre il titolo del documento da cui hai preso l'informazione\n6. Se nessun documento è pertinente, rispondi: \"Non ho informazioni su questo argomento nella knowledge base.\"\n\nNon usare mai conoscenze esterne alla knowledge base."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        128,
+        -160
+      ],
+      "id": "fec63eb0-ffd3-4f37-9328-851c007b708c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        80
+      ],
+      "id": "595156e8-5eaf-45c7-b9ee-be7cd24ac5e6",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "z4r3Ydp7ELQrM5tS",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        64
+      ],
+      "id": "3fa20cfd-7771-4d64-b5fb-b481c4c2c559",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Cerca nella knowledge base aziendale recuperando tutti i documenti.\nUsa questo tool quando l'utente fa domande su policy, orari, benefit, contatti o procedure aziendali.\nPassa il parametro 'query' con le keyword rilevanti estratte dalla domanda dell'utente.",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/1Bq7zMbcp5MyKpPTHDOa9GtlxLZ1D4Yak3tyNj2swrQ8/values/Foglio1",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSheetsOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        368,
+        80
+      ],
+      "id": "a2d8e994-f534-4502-9204-a1e4818c296d",
+      "name": "search_knowledge",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JF6aAmfwyPMlt8ht",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "**RAG Semplice | Variante B – Keyword RAG via HTTP Request**\n\nIl tool search_knowledge usa un nodo HTTP Request per interrogare la Google Sheets API direttamente, invece di usare il nodo nativo Google Sheets.\n\nIl flusso è:\n\n1. L'utente fa una domanda\n2. L'AI Agent chiama il tool search_knowledge via HTTP GET\n3. La Sheets API restituisce tutte le righe del foglio n8n_knowledge_base\n4. L'AI seleziona autonomamente le righe pertinenti e risponde\n\n**Differenza rispetto alla Variante A:** il retrieval avviene tramite API HTTP invece del nodo nativo — architettura più scalabile perché in futuro si possono aggiungere filtri server-side prima che i dati arrivino all'AI.\n\n**Limite attuale:** con 5 righe il comportamento è identico alla Variante A. La differenza diventa rilevante con knowledge base grandi (100+ righe), dove filtrare prima di passare i dati all'AI riduce il consumo di token e migliora le performance.\nOgni riga del foglio equivale già a un chunk — non serve chunking né embeddings. Il salto al RAG vero con similarità semantica avviene in Es.10.",
+        "height": 416,
+        "width": 528,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        -176
+      ],
+      "id": "30f41fd3-ba97-41b9-bce4-2ac556c85807",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_knowledge": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "393b0500-2529-4fa4-b680-ff086811226b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4e374609afe687e3e32ee92cbc3a42394013d2e233db99b1f9bb8c3058d8e773"
+  },
+  "id": "xgmcqvzhVkrHaRfh",
+  "tags": []
+}

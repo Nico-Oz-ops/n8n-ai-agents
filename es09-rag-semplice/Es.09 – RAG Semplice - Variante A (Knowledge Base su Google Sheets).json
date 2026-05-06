@@ -1,0 +1,192 @@
+{
+  "name": "Es.09 – RAG Semplice - Variante A (Knowledge Base su Google Sheets)",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        80,
+        -112
+      ],
+      "id": "27bbcf1e-e574-4339-9414-77561d12b054",
+      "name": "When chat message received",
+      "webhookId": "1b222d7e-61bc-4903-a385-e4862fa62f98"
+    },
+    {
+      "parameters": {
+        "content": "**Obiettivo**\nCostruire un agent che risponde a domande attingendo a una knowledge base di documenti, invece di usare solo la conoscenza del modello.\n\n**Concetto chiave**\nDomanda utente → Cerca documenti rilevanti → Inietta nel prompt → Risposta contestualizzata\n\n**Senza RAG:** l'agent risponde \"di testa\"\n**Con RAG:** l'agent risponde basandosi su documenti specifici che io controlli",
+        "height": 240,
+        "width": 352,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        -176
+      ],
+      "id": "3f224907-a7f2-4433-87da-b3235d657468",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        160,
+        128
+      ],
+      "id": "35b782bc-3117-43cf-882e-591aa5c13359",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "z4r3Ydp7ELQrM5tS",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Cerca nella knowledge base aziendale. \nUsa questo tool SEMPRE quando l'utente fa una domanda su policy, orari, benefit, contatti o procedure aziendali.\nRestituisce tutti i documenti disponibili: filtra tu quelli rilevanti in base alla domanda.",
+        "documentId": {
+          "__rl": true,
+          "value": "1Bq7zMbcp5MyKpPTHDOa9GtlxLZ1D4Yak3tyNj2swrQ8",
+          "mode": "list",
+          "cachedResultName": "n8n_knowledge_base",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Bq7zMbcp5MyKpPTHDOa9GtlxLZ1D4Yak3tyNj2swrQ8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Bq7zMbcp5MyKpPTHDOa9GtlxLZ1D4Yak3tyNj2swrQ8/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        544,
+        112
+      ],
+      "id": "8cd4659a-28b5-4672-8ea2-fcd98e38b7a5",
+      "name": "search_knowledge",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JF6aAmfwyPMlt8ht",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        112
+      ],
+      "id": "af0ac15d-a0ce-4322-b342-6b963c84ec19",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "content": "In questa variante, Naive RAG (full context loading):\n \n- L'AI legge tutti i documenti e seleziona autonomamente quelli pertinenti.\n- Il system message guida il comportamento del retrieval.\n- Funziona bene per knowledge base piccole (< 100 righe).\n- Zero code, tutto con tool nativi n8n.",
+        "height": 208,
+        "width": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        80
+      ],
+      "id": "9a6d07da-9b05-4566-8b75-7666f166d255",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Sei un assistente HR aziendale. Rispondi SOLO in italiano.\n\nQuando ricevi una domanda, usa SEMPRE il tool search_knowledge per cercare informazioni nella knowledge base prima di rispondere.\n\nDopo aver ottenuto i documenti:\n1. Seleziona solo quelli pertinenti alla domanda\n2. Basa la risposta esclusivamente sui documenti trovati\n3. Se nessun documento è pertinente, rispondi: \"Non ho informazioni su questo argomento nella knowledge base.\"\n4. Cita sempre il titolo del documento da cui hai preso l'informazione."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        288,
+        -112
+      ],
+      "id": "ce3a2c96-d667-452f-a8d2-cc499b1f76b7",
+      "name": "AI Agent - Naive RAG"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Naive RAG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Naive RAG",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_knowledge": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent - Naive RAG",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent - Naive RAG",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "92d44f06-cce8-4637-9ca8-beb21c11d274",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4e374609afe687e3e32ee92cbc3a42394013d2e233db99b1f9bb8c3058d8e773"
+  },
+  "id": "AeaBEy6wVf5IsoI7",
+  "tags": []
+}

@@ -1,0 +1,316 @@
+{
+  "name": "Es.06 – Ticket Classifier Agent (Condizioni e branching)",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -768,
+        192
+      ],
+      "id": "ef48d5bf-7c8a-447b-a085-191247a2ca81",
+      "name": "When chat message received",
+      "webhookId": "7e0642d3-15dd-4c90-92a5-1dfb6eb044b8"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=Sei un assistente di supporto tecnico. Il tuo unico compito è classificare il messaggio dell'utente in una di queste categorie:\n\n- bug: l'utente segnala un problema, errore o malfunzionamento\n- feature: l'utente chiede una nuova funzionalità o miglioramento\n- question: l'utente fa una domanda generica\n\nRispondi SEMPRE e SOLO con un JSON valido in questo formato, senza aggiungere nulla altro:\n\n{\n  \"category\": \"bug\" | \"feature\" | \"question\",\n  \"summary\": \"breve sintesi del messaggio in massimo 10 parole\"\n}",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -560,
+        192
+      ],
+      "id": "1df73c92-0651-4163-919b-55a5a7af5a64",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        416
+      ],
+      "id": "498e8919-8ecc-49da-bcca-9b8753016128",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "z4r3Ydp7ELQrM5tS",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -464,
+        416
+      ],
+      "id": "1acaa449-f88f-4cea-8716-63cd8cf6149f",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "bug",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "f25cee02-d523-4af0-b3d9-ee255404e25b"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Bug"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1e565bc4-7b1d-4ead-88b4-37d48d1ff2b3",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "feature",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Feature"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "4b5127bd-4d92-482b-a555-dd19b64166c6",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "question",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Question"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -208,
+        192
+      ],
+      "id": "39dce7d2-99e4-4579-b866-a41a03405aa2",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b5689927-e4ce-4f93-886d-83dbbaa74d94",
+              "name": "response",
+              "value": "Bug ricevuto. Grazie per la segnalazione. Per procedere abbiamo bisogno di: \n1. Sistema operativo e versione \n2. Passi per riprodurre il problema \n3. Screenshot se disponibile",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3c57c6f3-22c6-4826-9b43-ec35a7f5ffb8",
+      "name": "Risposta Bug"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f296ef9b-f634-42bb-8d5d-fcf31c4b1376",
+              "name": "response",
+              "value": "Feature request ricevuta. La valuteremo nel prossimo sprint. \nPuoi aggiungere maggiori dettagli su: \n1. Problema che vuoi risolvere \n2. Come immagini la soluzione",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        192
+      ],
+      "id": "9ac3c711-6b74-415c-9eb5-f0bce756edea",
+      "name": "Risposta Feature"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b827232b-ae2d-44b6-8193-b47bd2486e20",
+              "name": "response",
+              "value": "Hai fatto una domanda generica. Un operatore ti risponderà entro 24 ore.",
+              "type": "string"
+            },
+            {
+              "id": "69a85ee4-8fe3-49cb-94e3-3dc5b11152e2",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        368
+      ],
+      "id": "58a8576c-8535-4038-adc1-46dd02d36b38",
+      "name": "Risposta Question"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Risposta Bug",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Risposta Feature",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Risposta Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "374c253d-e77f-4eea-bcb2-86f6ed1f8eda",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4e374609afe687e3e32ee92cbc3a42394013d2e233db99b1f9bb8c3058d8e773"
+  },
+  "id": "GxIvkE4qiF4iU1RN",
+  "tags": []
+}

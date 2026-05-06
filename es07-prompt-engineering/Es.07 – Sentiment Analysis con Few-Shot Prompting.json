@@ -1,0 +1,117 @@
+{
+  "name": "Es.07 – Sentiment Analysis con Few-Shot Prompting",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "17eb331a-82b4-4b1c-b2d1-d063b132ef93",
+      "name": "When chat message received",
+      "webhookId": "281238b4-3d12-453e-a141-989ab0ad9fbf"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        560,
+        0
+      ],
+      "id": "286bb662-1ce4-4648-bdcd-dc43f8d32c10",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        160,
+        224
+      ],
+      "id": "8eb8075e-0dff-4955-a29f-5846a14e51d3",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "z4r3Ydp7ELQrM5tS",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=Sei un analista di recensioni di prodotti e-commerce.\nAnalizza la recensione fornita dall'utente e restituisci SOLO un oggetto JSON valido, senza testo aggiuntivo, senza markdown, senza backtick.\n\nIl JSON deve avere esattamente questa struttura:\n{\n  \"sentiment\": \"positive\" | \"negative\" | \"neutral\",\n  \"score\": numero decimale da 0.0 a 1.0,\n  \"aspects\": [\"aspetto1\", \"aspetto2\", ...]\n}\n\nRegole:\n- score vicino a 1.0 = molto positivo, vicino a 0.0 = molto negativo, intorno a 0.5 = neutro\n- aspects: elenca solo gli aspetti del prodotto menzionati nella recensione\n\nEsempi:\n\nInput: \"Prodotto fantastico, arrivato in anticipo e il prezzo è ottimo!\"\nOutput: {\"sentiment\":\"positive\",\"score\":0.92,\"aspects\":[\"spedizione\",\"prezzo\"]}\n\nInput: \"Pessima qualità, si è rotto dopo due giorni. Assistenza inesistente.\"\nOutput: {\"sentiment\":\"negative\",\"score\":0.05,\"aspects\":[\"qualità\",\"durata\",\"assistenza\"]}\n\nInput: \"Nella norma, niente di speciale. Spedizione regolare.\"\nOutput: {\"sentiment\":\"neutral\",\"score\":0.50,\"aspects\":[\"spedizione\"]}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "e36ec406-ea67-44ee-a668-1c85ad7ff70c",
+      "name": "AI Agent - Analista Recensioni e-commerce."
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Analista Recensioni e-commerce.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Analista Recensioni e-commerce.",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - Analista Recensioni e-commerce.": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ed55418b-310c-4f1f-b2db-4f989d97310b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4e374609afe687e3e32ee92cbc3a42394013d2e233db99b1f9bb8c3058d8e773"
+  },
+  "id": "IRL1Uck24lHg0bRP",
+  "tags": []
+}
