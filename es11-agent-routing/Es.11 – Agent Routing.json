@@ -26,23 +26,6 @@
     },
     {
       "parameters": {
-        "promptType": "define",
-        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
-        "options": {
-          "systemMessage": "Sei un router. Analizza il messaggio dell'utente e rispondi SOLO con un JSON.\n\nRegole:\n- Se riguarda meteo, temperatura, pioggia → route: \"meteo\"\n- Se riguarda note, appunti, salvare, ricordare → route: \"note\"\n- Se riguarda fermate, autobus, metro, trasporti Roma → route: \"fermate\"\n- Se non capisci → route: \"unknown\"\n\nRispondi SEMPRE e SOLO con questo formato:\n{\"route\": \"meteo\"}\n\nNessun testo prima o dopo. Solo JSON."
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
-      "position": [
-        192,
-        32
-      ],
-      "id": "24d78ddd-87cc-401e-b036-100d6c30f5af",
-      "name": "AI Agent"
-    },
-    {
-      "parameters": {
         "model": "llama-3.3-70b-versatile",
         "options": {
           "temperature": 0.3
@@ -594,6 +577,38 @@
       ],
       "id": "600bf6ab-1ad8-445f-b3b3-4d6e31e0bc96",
       "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "**ESEMPIO PRATICO INTENT:**\n**1.** \"Che tempo fa a Roma?\" --> intent: meteo (vuole sapere il meteo)\n**2.** \"Salva una nota: riunione alle 15\" --> intente: nota (vuole salvare una nota)\n**3.** \"Dove si trova la fermata Spagna?\" --> intent: fermata (vuole trovare una fermata)\n\nQuindi il Router Agent non legge parola per parola, capscie l'intenzione dietro al messaggio e la classifica in una categoria.",
+        "height": 192,
+        "width": 496
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        336
+      ],
+      "id": "cc456d85-1212-4cab-99ef-1d0622947c9e",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "options": {
+          "systemMessage": "Sei un router. Analizza il messaggio dell'utente e rispondi SOLO con un JSON.\n\nRegole:\n- Se riguarda meteo, temperatura, pioggia → route: \"meteo\"\n- Se riguarda note, appunti, salvare, ricordare → route: \"note\"\n- Se riguarda fermate, autobus, metro, trasporti Roma → route: \"fermate\"\n- Se non capisci → route: \"unknown\"\n\nRispondi SEMPRE e SOLO con questo formato:\n{\"route\": \"meteo\"}\n\nNessun testo prima o dopo. Solo JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        192,
+        32
+      ],
+      "id": "24d78ddd-87cc-401e-b036-100d6c30f5af",
+      "name": "AI Agent-Routing"
     }
   ],
   "pinData": {},
@@ -602,7 +617,7 @@
       "main": [
         [
           {
-            "node": "AI Agent",
+            "node": "AI Agent-Routing",
             "type": "main",
             "index": 0
           }
@@ -613,19 +628,8 @@
       "ai_languageModel": [
         [
           {
-            "node": "AI Agent",
+            "node": "AI Agent-Routing",
             "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "AI Agent": {
-      "main": [
-        [
-          {
-            "node": "Switch",
-            "type": "main",
             "index": 0
           }
         ]
@@ -816,6 +820,17 @@
           }
         ]
       ]
+    },
+    "AI Agent-Routing": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -823,7 +838,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "ac3bf30d-0aad-48fe-87cf-0df4ed3982f9",
+  "versionId": "be3990a7-994a-453a-8f4a-70df35dde66c",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "4e374609afe687e3e32ee92cbc3a42394013d2e233db99b1f9bb8c3058d8e773"
