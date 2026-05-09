@@ -79,14 +79,31 @@ in un unico messaggio chiaro.
 
 **System Message:**
 ```
-Sei un esperto meteo. Usa il tool get_weather per ottenere le condizioni
-meteo della città richiesta e rispondi in italiano con temperatura,
-condizioni e vento.
+Sei un esperto meteo. Usa il tool get_weather per ottenere
+le condizioni meteo della città richiesta.
+
+Se l'utente chiede il meteo attuale, usa i dati 'current'.
+Se l'utente chiede le previsioni future, usa i dati 'daily'
+e presentali giorno per giorno in italiano con temperatura
+massima, minima, condizioni e precipitazioni.
 ```
 
 **Tool HTTP Request (get_weather):**
-- URL: `https://api.open-meteo.com/v1/forecast`
-- Params: `latitude`, `longitude` via `$fromAI`, `current=temperature_2m,weathercode,windspeed_10m`, `timezone=auto`
+
+| Parametro | Valore |
+|-----------|--------|
+| Method | GET |
+| URL | `https://api.open-meteo.com/v1/forecast` |
+| `latitude` | `$fromAI('latitude', 'latitudine della città')` |
+| `longitude` | `$fromAI('longitude', 'longitudine della città')` |
+| `current` | `temperature_2m,weathercode,windspeed_10m` |
+| `daily` | `temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum` |
+| `forecast_days` | `7` |
+| `timezone` | `auto` |
+
+> Il parametro `daily` e `forecast_days` permettono all'agente di rispondere anche a previsioni future. L'AI decide autonomamente quali dati usare in base alla domanda:
+> - "Che tempo fa a Roma?" → usa `current`
+> - "Previsioni per i prossimi 3 giorni a Milano?" → usa `daily`
 
 > ⚠️ **NON aggiungere Respond to Webhook.** L'AI Agent è l'ultimo nodo. n8n restituisce automaticamente il suo output al Supervisor.
 
@@ -176,7 +193,7 @@ o elencando le note trovate.
 
 - **Trigger**: Telegram Bot API
 - **Supervisor**: OpenAI gpt-4o-mini, temp 0.3, Simple Memory
-- **Worker Meteo**: open-meteo.com API
+- **Worker Meteo**: open-meteo.com API (meteo attuale + previsioni 7 giorni)
 - **Worker Note**: Google Sheets (save + get)
 - **Worker Fermate**: Supabase REST API (pgvector, dati GTFS Roma)
 - **Tool di collegamento**: Call n8n Workflow

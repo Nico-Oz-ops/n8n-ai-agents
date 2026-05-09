@@ -11,7 +11,7 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.2,
       "position": [
-        0,
+        -16,
         0
       ],
       "id": "31d2fdca-f222-4e93-81fa-22386d5e039c",
@@ -35,7 +35,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        608,
+        624,
         0
       ],
       "id": "d5862403-d45e-4cab-90f4-22a4497aaa90",
@@ -342,7 +342,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "52efdf1e-d8f3-416d-afc2-0ea19f811273",
+  "versionId": "64846c20-ae57-40ba-a231-9c27d3d18ec5",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "4e374609afe687e3e32ee92cbc3a42394013d2e233db99b1f9bb8c3058d8e773"

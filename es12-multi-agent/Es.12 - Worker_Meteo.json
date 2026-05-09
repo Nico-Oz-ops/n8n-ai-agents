@@ -6,7 +6,7 @@
         "promptType": "define",
         "text": "={{ $json.query }}",
         "options": {
-          "systemMessage": "Sei un esperto meteo. Usa il tool get_weather per ottenere le condizioni \nmeteo della città richiesta e rispondi in italiano con temperatura, \ncondizioni e vento.",
+          "systemMessage": "Sei un esperto meteo. Usa il tool get_weather per ottenere \nle condizioni meteo della città richiesta.\n\nSe l'utente chiede il meteo attuale, usa i dati \"current\".\nSe l'utente chiede le previsioni future, usa i dati \"daily\" \ne presentali giorno per giorno in italiano con temperatura \nmassima, minima, condizioni e precipitazioni.",
           "maxIterations": 5
         }
       },
@@ -45,6 +45,14 @@
             {
               "name": "timezone",
               "value": "auto"
+            },
+            {
+              "name": "daily",
+              "value": "temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum"
+            },
+            {
+              "name": "forecast_days",
+              "value": "7"
             }
           ]
         },
@@ -108,9 +116,9 @@
     },
     {
       "parameters": {
-        "content": "**ES.12 – WORKER METEO**\nExecute Workflow Trigger → AI Agent Meteo\nPrompt: $json.query | Tool: HTTP Request open-meteo\nNo memory | Temp: 0.0 | MaxIter: 5\n\n⚠️ NON usare Respond to Webhook: AI Agent è l'ultimo nodo",
-        "height": 176,
-        "width": 288
+        "content": "**ES.12 – WORKER METEO**\nExecute Workflow Trigger → AI Agent Meteo\nPrompt: $json.query | Tool: HTTP Request open-meteo\nParams: current + daily (7 giorni) + timezone=auto\nNo memory | Temp: 0.0 | MaxIter: 5\n\n⚠️ NON usare Respond to Webhook: AI Agent è l'ultimo nodo",
+        "height": 192,
+        "width": 336
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -168,7 +176,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "dbd20fc8-2269-4a75-a6f5-20a2f5dd8a8e",
+  "versionId": "f1bd43b6-82eb-4b55-ab6d-8a4a14559fa3",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "4e374609afe687e3e32ee92cbc3a42394013d2e233db99b1f9bb8c3058d8e773"
