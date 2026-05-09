@@ -12,8 +12,8 @@ Percorso pratico di apprendimento per costruire **AI Agent con n8n**, da zero fi
 Fase 1 – Fondamenta          (Es.01–05)  ✅
 Fase 2 – Controllo           (Es.06–08)  ✅
 Fase 3 – Knowledge & RAG     (Es.09–10)  ✅
-Fase 4 – Architettura agent  (Es.11–12)  🔄
-Fase 5 – Integrazione reale  (Es.13–14)  ⏳
+Fase 4 – Architettura agent  (Es.11–12)  ✅
+Fase 5 – Integrazione reale  (Es.13–14)  🔄
 ```
 
 ---
@@ -32,8 +32,8 @@ Fase 5 – Integrazione reale  (Es.13–14)  ⏳
 | Es.08 | Multi-tool Coordination | ✅ | Telegram Trigger, meteo + note su Sheets |
 | Es.09 | RAG Semplice | ✅ | Naive RAG e Keyword RAG su Google Sheets |
 | Es.10 | RAG Avanzato GTFS Roma | ✅ | pgvector, OpenAI embeddings, 8.377 fermate ATAC |
-| Es.11 | Agent Routing | 🔄 | Router agent → worker specializzati |
-| Es.12 | Multi-Agent | ⏳ | Supervisor + worker agents |
+| Es.11 | Agent Routing | ✅ | Router agent → worker specializzati |
+| Es.12 | Multi-Agent | ✅ | Supervisor + worker agents |
 | Es.13 | API con Autenticazione | ⏳ | OAuth2, token refresh, API sicure |
 | Es.14 | Smart Commute Roma | ⏳ | Sistema finale end-to-end |
 
