@@ -1,0 +1,352 @@
+{
+  "name": "Es.12 – Multi-Agent: Supervisor",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "31d2fdca-f222-4e93-81fa-22386d5e039c",
+      "name": "Telegram Trigger",
+      "webhookId": "0bf9ff9e-b303-41c7-ba9c-7d69cd4a0ce4",
+      "credentials": {
+        "telegramApi": {
+          "id": "QqQqPO6fkKWM4ApX",
+          "name": "Telegram_Assistente_Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        608,
+        0
+      ],
+      "id": "d5862403-d45e-4cab-90f4-22a4497aaa90",
+      "name": "Send a text message",
+      "webhookId": "e0cbebcc-225c-433e-bbcf-760c3ed6f1ba",
+      "credentials": {
+        "telegramApi": {
+          "id": "QqQqPO6fkKWM4ApX",
+          "name": "Telegram_Assistente_Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').first().json.message.text }}",
+        "options": {
+          "systemMessage": "Sei un assistente personale che risponde SEMPRE in italiano.\n\nREGOLA FONDAMENTALE: non rispondere mai direttamente. \nUsa SEMPRE i tool disponibili per soddisfare le richieste.\n\n- Per richieste meteo: usa SEMPRE get_weather\n- Per note: usa SEMPRE manage_notes  \n- Per fermate bus/metro: usa SEMPRE search_fermate\n\nEsegui TUTTI i tool necessari, poi consolida le risposte \nin un unico messaggio chiaro.",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        240,
+        0
+      ],
+      "id": "cfea6eea-509a-45a2-b3e8-0dedecb31208",
+      "name": "AI Agent-Supervisor"
+    },
+    {
+      "parameters": {
+        "description": "Ottieni le condizioni meteo attuali di una città. Input: nome della città.",
+        "workflowId": {
+          "__rl": true,
+          "value": "mY0Wiv7ae7wugH1V",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/mY0Wiv7ae7wugH1V",
+          "cachedResultName": "Es.12 - Worker_Meteo"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ $fromAI('query', 'la richiesta meteo da elaborare') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        352,
+        256
+      ],
+      "id": "cc547a54-f2ab-46af-a3e5-cca35ba0cc26",
+      "name": "get_weather"
+    },
+    {
+      "parameters": {
+        "description": "Gestisci le note: salva nuove note o recupera quelle esistenti. Input: la richiesta dell'utente sulle note.",
+        "workflowId": {
+          "__rl": true,
+          "value": "xDNyhe0We6sQQxv0",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/xDNyhe0We6sQQxv0",
+          "cachedResultName": "Es.12 - Worker-Note"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ $fromAI('query', 'il testo della nota da salvare o recuperare') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        256
+      ],
+      "id": "84ad0114-80f6-458a-a390-98f340a4ccfb",
+      "name": "manage_notes"
+    },
+    {
+      "parameters": {
+        "description": "Ottieni le fermate di autobus, metro o tram della città di Roma, richiesta dall'utente.",
+        "workflowId": {
+          "__rl": true,
+          "value": "p7xgiMox0ySk2DY4",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/p7xgiMox0ySk2DY4",
+          "cachedResultName": "Es.12 - Worker-Fermate"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ $fromAI('query', 'la richiesta fermata da elaborare') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        256
+      ],
+      "id": "b8b92f48-1840-4780-b3af-33c639e20151",
+      "name": "fermate"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "responsesApiEnabled": false,
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        256
+      ],
+      "id": "f9dda0e0-08ad-419a-a620-7533497e443b",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ffNo0L3Up3uVkTQV",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').first().json.message.chat.id }}_v2"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        256
+      ],
+      "id": "a4cca7dd-59cc-444c-8891-fd8ead28ca60",
+      "name": "Memoria"
+    },
+    {
+      "parameters": {
+        "content": "**ES.12 – SUPERVISOR**\nTelegram Trigger → AI Agent Supervisor → Send Telegram\nTool: get_weather | manage_notes | fermate (Call n8n Workflow)\nMemory: Simple Memory | sessionId = chat.id | Temp: 0.3 | MaxIter: 10\nGestisce intent multipli in un solo messaggio",
+        "height": 176,
+        "width": 336,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        16
+      ],
+      "id": "904fd342-17d6-4998-a997-c5747fbd53b1",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent-Supervisor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent-Supervisor": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_weather": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent-Supervisor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "manage_notes": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent-Supervisor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fermate": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent-Supervisor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent-Supervisor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memoria": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent-Supervisor",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "52efdf1e-d8f3-416d-afc2-0ea19f811273",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4e374609afe687e3e32ee92cbc3a42394013d2e233db99b1f9bb8c3058d8e773"
+  },
+  "id": "neP6NONuQgCiKcQj",
+  "tags": []
+}

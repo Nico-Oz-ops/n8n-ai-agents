@@ -1,0 +1,259 @@
+{
+  "name": "Es.12 - Worker-Note",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f47729e9-063b-469b-9d82-24f25dac8d3b",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "Sei un assistente per la gestione delle note.\nUsa save_note per salvare nuove note su Google Sheets.\nUsa get_notes per recuperare le note già salvate.\nRispondi in italiano confermando l'operazione eseguita \no elencando le note trovate.",
+          "maxIterations": 5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "3658ca78-e0d6-47de-b7b7-bdda97daaa71",
+      "name": "AI Agent-Note"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Salva una nota. Usare quando l'utente vuole salvare, annotare o ricordare qualcosa per dopo.",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1R8GQ14e6rn19Z2H6ud61Azw4PKsB0H6j2o3LGAjYg-o",
+          "mode": "list",
+          "cachedResultName": "notes_n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R8GQ14e6rn19Z2H6ud61Azw4PKsB0H6j2o3LGAjYg-o/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R8GQ14e6rn19Z2H6ud61Azw4PKsB0H6j2o3LGAjYg-o/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Title": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}",
+            "Content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Content', ``, 'string') }}",
+            "savedAt": "={{ $now }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "savedAt",
+              "displayName": "savedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        288,
+        240
+      ],
+      "id": "b0cd7196-f758-43b8-8028-d0e8a9de697a",
+      "name": "save_note",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JF6aAmfwyPMlt8ht",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Recupera le note salvate dall'utente. Usare quando l'utente chiede cosa ha salvato, cosa ha in agenda, o vuole ricordare qualcosa.",
+        "documentId": {
+          "__rl": true,
+          "value": "1R8GQ14e6rn19Z2H6ud61Azw4PKsB0H6j2o3LGAjYg-o",
+          "mode": "list",
+          "cachedResultName": "notes_n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R8GQ14e6rn19Z2H6ud61Azw4PKsB0H6j2o3LGAjYg-o/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R8GQ14e6rn19Z2H6ud61Azw4PKsB0H6j2o3LGAjYg-o/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        416,
+        240
+      ],
+      "id": "efd8ad95-e29b-4484-95c9-4e3e91f6efcb",
+      "name": "get_notes",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JF6aAmfwyPMlt8ht",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "responsesApiEnabled": false,
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        144,
+        240
+      ],
+      "id": "fd0239ba-99be-40af-bffe-85b9ec96b78d",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ffNo0L3Up3uVkTQV",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "**ES.12 – WORKER NOTE**\nExecute Workflow Trigger → AI Agent Note\nPrompt: $json.query | Tool: save_note + get_notes (Google Sheets)\nNo memory | Temp: 0.0 | MaxIter: 5\n\n⚠️ NON usare Respond to Webhook: AI Agent è l'ultimo nodo",
+        "width": 336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        32
+      ],
+      "id": "5f8d765f-3efc-41a0-9d14-8cb310e0610c",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent-Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent-Note": {
+      "main": [
+        []
+      ]
+    },
+    "save_note": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent-Note",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_notes": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent-Note",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent-Note",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1b913229-7cad-4e94-9aa6-0325e3fa9995",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4e374609afe687e3e32ee92cbc3a42394013d2e233db99b1f9bb8c3058d8e773"
+  },
+  "id": "xDNyhe0We6sQQxv0",
+  "tags": []
+}

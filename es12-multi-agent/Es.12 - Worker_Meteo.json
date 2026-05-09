@@ -1,0 +1,178 @@
+{
+  "name": "Es.12 - Worker_Meteo",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "Sei un esperto meteo. Usa il tool get_weather per ottenere le condizioni \nmeteo della città richiesta e rispondi in italiano con temperatura, \ncondizioni e vento.",
+          "maxIterations": 5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        96,
+        48
+      ],
+      "id": "92890906-8f86-4bc8-a7e9-6d14c781e0d7",
+      "name": "AI Agent-Meteo"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Recupera il meteo attuale di una città. Richiede latitude (numero decimale, es: 41.9028) e longitude (numero decimale, es: 12.4964). Non modificare l'URL.",
+        "url": "https://api.open-meteo.com/v1/forecast",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "latitude",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', ``, 'string') }}"
+            },
+            {
+              "name": "longitude",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', ``, 'string') }}"
+            },
+            {
+              "name": "current",
+              "value": "temperature_2m,weathercode,windspeed_10m"
+            },
+            {
+              "name": "temperature_unit",
+              "value": "celsius"
+            },
+            {
+              "name": "timezone",
+              "value": "auto"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        320,
+        272
+      ],
+      "id": "7da3f827-cb5c-4917-a608-b21c3ffd634d",
+      "name": "get_weather"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -128,
+        48
+      ],
+      "id": "adf4e3ae-a6d3-4ff9-b93e-19f8c738bda9",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "responsesApiEnabled": false,
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        288
+      ],
+      "id": "4c1571c7-ae90-4303-bd65-524fe7d0f013",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ffNo0L3Up3uVkTQV",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "**ES.12 – WORKER METEO**\nExecute Workflow Trigger → AI Agent Meteo\nPrompt: $json.query | Tool: HTTP Request open-meteo\nNo memory | Temp: 0.0 | MaxIter: 5\n\n⚠️ NON usare Respond to Webhook: AI Agent è l'ultimo nodo",
+        "height": 176,
+        "width": 288
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        32
+      ],
+      "id": "4e959d68-2ec1-4662-a95c-6accc0f27f61",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent-Meteo": {
+      "main": [
+        []
+      ]
+    },
+    "get_weather": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent-Meteo",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent-Meteo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent-Meteo",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "dbd20fc8-2269-4a75-a6f5-20a2f5dd8a8e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4e374609afe687e3e32ee92cbc3a42394013d2e233db99b1f9bb8c3058d8e773"
+  },
+  "id": "mY0Wiv7ae7wugH1V",
+  "tags": []
+}
