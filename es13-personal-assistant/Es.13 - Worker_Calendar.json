@@ -55,9 +55,9 @@
         "operation": "getAll",
         "calendar": {
           "__rl": true,
-          "value": "nicolasvr1988@gmail.com",
+          "value": "YOUR_GMAIL_ADDRESS",
           "mode": "list",
-          "cachedResultName": "nicolasvr1988@gmail.com"
+          "cachedResultName": "YOUR_GMAIL_ADDRESS"
         },
         "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('After', ``, 'string') }}",
         "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Before', ``, 'string') }}",
@@ -85,9 +85,9 @@
         "operation": "delete",
         "calendar": {
           "__rl": true,
-          "value": "nicolasvr1988@gmail.com",
+          "value": "YOUR_GMAIL_ADDRESS",
           "mode": "list",
-          "cachedResultName": "nicolasvr1988@gmail.com"
+          "cachedResultName": "YOUR_GMAIL_ADDRESS"
         },
         "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
         "options": {}
@@ -113,9 +113,9 @@
         "toolDescription": "Usa questo tool per creare un nuovo evento nel calendario.",
         "calendar": {
           "__rl": true,
-          "value": "nicolasvr1988@gmail.com",
+          "value": "YOUR_GMAIL_ADDRESS",
           "mode": "list",
-          "cachedResultName": "nicolasvr1988@gmail.com"
+          "cachedResultName": "YOUR_GMAIL_ADDRESS"
         },
         "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
         "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",

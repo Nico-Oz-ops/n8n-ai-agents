@@ -353,7 +353,7 @@
       ],
       "id": "573c87bb-5f0d-49ab-8028-9826d9a88da4",
       "name": "Telegram Trigger",
-      "webhookId": "e5ccc2eb-df2f-41cf-8d34-baa3e8202d4a",
+      "webhookId": "YOUR_TELEGRAM_WEBHOOK_ID",
       "credentials": {
         "telegramApi": {
           "id": "ml8IN06e5g0JYkMz",

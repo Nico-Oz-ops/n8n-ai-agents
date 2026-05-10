@@ -19,7 +19,7 @@
         "filter": {
           "folderId": {
             "__rl": true,
-            "value": "1mwFDSa_SPVVzgtGpiFA3wyhGGl-ISjrj",
+            "value": "YOUR_GOOGLE_DRIVE_FOLDER_ID",
             "mode": "id"
           }
         },
