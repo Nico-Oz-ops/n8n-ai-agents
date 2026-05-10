@@ -1,0 +1,525 @@
+{
+  "name": "Es.13 – Personal Assistant: Supervisor",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "responsesApiEnabled": false,
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -80,
+        256
+      ],
+      "id": "7978f30a-d9b2-4f57-865b-d6d3aa533788",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ffNo0L3Up3uVkTQV",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        64,
+        256
+      ],
+      "id": "7b50d287-9eec-438e-8d46-230d817549f0",
+      "name": "Memoria"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "Sei un personal assistant intelligente con accesso a diversi agenti \nspecializzati e tool. \n\nPuoi aiutare con email, calendario, contatti, scrittura contenuti, ricerca web e meteo.\n\nDelega sempre al worker appropriato in base alla richiesta dell'utente.\n\nRispondi sempre in italiano in modo chiaro e conciso.",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        400,
+        0
+      ],
+      "id": "963cc9b4-b968-4dd4-af3c-fdc9ca0824ef",
+      "name": "AI Agent-Supervisor"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        176,
+        256
+      ],
+      "id": "7125cbc5-ec6f-40ea-90ff-bb19da485f01",
+      "name": "SerpAPI",
+      "credentials": {
+        "serpApi": {
+          "id": "T6GMlmUBFRKsEa6n",
+          "name": "SerpAPI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Usa questo tool per gestire le email: leggere, cercare, inviare e rispondere alle email tramite Gmail",
+        "workflowId": {
+          "__rl": true,
+          "value": "0sD2ovv85SFymqI3",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/0sD2ovv85SFymqI3",
+          "cachedResultName": "Es.13 - Worker_Email"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ $fromAI('query') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        304,
+        256
+      ],
+      "id": "a82719c7-ccba-4ce4-88d8-d5033b4824ac",
+      "name": "email_worker"
+    },
+    {
+      "parameters": {
+        "description": "Usa questo tool per gestire il calendario: leggere eventi esistenti, creare nuovi eventi ed eliminare eventi tramite Google Calendar",
+        "workflowId": {
+          "__rl": true,
+          "value": "dYmdTpk9mjQ8IV1X",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/dYmdTpk9mjQ8IV1X",
+          "cachedResultName": "Es.13 - Worker_Calendar"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ $fromAI('query') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        256
+      ],
+      "id": "49e79c5b-95fb-4d18-9af7-ed9d180132cf",
+      "name": "calendar_worker"
+    },
+    {
+      "parameters": {
+        "description": "Usa questo tool per gestire i contatti: cercare, creare e aggiornare contatti tramite Google Contacts.",
+        "workflowId": {
+          "__rl": true,
+          "value": "vLyDUVAlYpa5HW6t",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/vLyDUVAlYpa5HW6t",
+          "cachedResultName": "ES.13 - Worker_Contacts"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ $fromAI('query') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        256
+      ],
+      "id": "80e3f35e-4033-4259-a3fc-994f2205f3d7",
+      "name": "contacts_worker"
+    },
+    {
+      "parameters": {
+        "description": "Usa questo tool per generare contenuti testuali: email, post social, articoli, lettere, riassunti e traduzioni",
+        "workflowId": {
+          "__rl": true,
+          "value": "39ea6lwrkzTaZJaA",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/39ea6lwrkzTaZJaA",
+          "cachedResultName": "Es.13 - Worker-Writer"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ $fromAI('query') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        752,
+        256
+      ],
+      "id": "4d3ae654-dd7d-4012-9668-5f5eb179d96f",
+      "name": "writer_worker"
+    },
+    {
+      "parameters": {
+        "description": "Usa questo tool per ottenere informazioni meteo e previsioni del tempo per qualsiasi città.",
+        "workflowId": {
+          "__rl": true,
+          "value": "qumICReIddlp4D4S",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/qumICReIddlp4D4S",
+          "cachedResultName": "Es.13 - Worker_Meteo"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ $fromAI('query') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        256
+      ],
+      "id": "ab0a134b-23fa-4186-8c9c-d3a6b8531588",
+      "name": "meteo_worker"
+    },
+    {
+      "parameters": {
+        "description": "Cerca informazioni nei documenti del corso di Intelligenza Artificiale IA_8.\nUsalo quando l'utente fa domande su AI, machine learning, prompt engineering,\nautomazione, agenti AI, n8n o argomenti del corso.",
+        "workflowId": {
+          "__rl": true,
+          "value": "XCk3pGAi217aP0DH",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/XCk3pGAi217aP0DH",
+          "cachedResultName": "Es.13 - Worker_Knowledge"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ $fromAI('query') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        256
+      ],
+      "id": "f607a217-99a6-4566-9d8c-7b23886bc6eb",
+      "name": "knowledge_worker"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        32,
+        0
+      ],
+      "id": "573c87bb-5f0d-49ab-8028-9826d9a88da4",
+      "name": "Telegram Trigger",
+      "webhookId": "e5ccc2eb-df2f-41cf-8d34-baa3e8202d4a",
+      "credentials": {
+        "telegramApi": {
+          "id": "ml8IN06e5g0JYkMz",
+          "name": "Telegram_AP_Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        752,
+        0
+      ],
+      "id": "7fac5d17-16ef-461e-84a3-698d766c0ea4",
+      "name": "Send a text message",
+      "webhookId": "fa63d681-17bb-48d2-9573-8081abe35541",
+      "credentials": {
+        "telegramApi": {
+          "id": "ml8IN06e5g0JYkMz",
+          "name": "Telegram_AP_Bot"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent-Supervisor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memoria": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent-Supervisor",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent-Supervisor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "email_worker": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent-Supervisor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calendar_worker": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent-Supervisor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "contacts_worker": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent-Supervisor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "writer_worker": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent-Supervisor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "meteo_worker": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent-Supervisor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "knowledge_worker": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent-Supervisor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent-Supervisor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent-Supervisor": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a6da4c14-0e87-410d-a63d-144300e0b76f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4e374609afe687e3e32ee92cbc3a42394013d2e233db99b1f9bb8c3058d8e773"
+  },
+  "id": "06cxFshs1OLB5Wvs",
+  "tags": []
+}
